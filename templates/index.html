@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excelシート分離ツール</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        .description {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #4a90d9;
+        }
+        .file-input-wrapper {
+            position: relative;
+            border: 2px dashed #ddd;
+            border-radius: 4px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        .file-input-wrapper:hover {
+            border-color: #4a90d9;
+        }
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .file-label {
+            color: #666;
+            font-size: 14px;
+        }
+        .file-name {
+            margin-top: 10px;
+            color: #4a90d9;
+            font-weight: 600;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #4a90d9;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #357abd;
+        }
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        .flash {
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .flash.error {
+            background: #fee;
+            color: #c00;
+            border: 1px solid #fcc;
+        }
+        .flash.warning {
+            background: #fff8e6;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .flash.success {
+            background: #e6ffed;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .sheet-list {
+            margin-top: 20px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            display: none;
+        }
+        .sheet-list.visible {
+            display: block;
+        }
+        .sheet-list h3 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            color: #333;
+        }
+        .sheet-list ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .sheet-list li {
+            padding: 8px 12px;
+            background: white;
+            margin-bottom: 4px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #555;
+            border: 1px solid #e9ecef;
+        }
+        .sheet-list li:last-child {
+            margin-bottom: 0;
+        }
+        .sheet-count {
+            font-size: 12px;
+            color: #888;
+            margin-left: 8px;
+            font-weight: normal;
+        }
+        .loading {
+            color: #888;
+            font-size: 13px;
+            text-align: center;
+            padding: 10px;
+        }
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .mode-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.2s;
+        }
+        .mode-btn:hover {
+            border-color: #4a90d9;
+        }
+        .mode-btn.active {
+            border-color: #4a90d9;
+            background: #e8f0fe;
+            color: #4a90d9;
+        }
+        .sheet-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sheet-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .sheet-item label {
+            flex: 1;
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        .sheet-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .sheet-actions button {
+            flex: 1;
+            padding: 8px;
+            font-size: 12px;
+            background: #6c757d;
+        }
+        .sheet-actions button:hover {
+            background: #5a6268;
+        }
+        .selected-count {
+            font-size: 12px;
+            color: #4a90d9;
+            margin-left: 8px;
+        }
+        .extract-section {
+            display: none;
+        }
+        .extract-section.visible {
+            display: block;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 16px;
+            font-size: 13px;
+            color: #888;
+        }
+        footer a {
+            color: #4a90d9;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Excelシート分離ツール</h1>
+        <p class="description">
+            複数のシートを含むExcelファイルをアップロードし、
+            指定したキーワードを含むシートのみを抽出して新しいファイルとしてダウンロードできます。
+        </p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" enctype="multipart/form-data" id="mainForm">
+            <input type="hidden" name="extract_mode" id="extractMode" value="selection">
+
+            <div class="form-group">
+                <label for="file">Excelファイル (.xlsx, .xlsm)</label>
+                <div class="file-input-wrapper">
+                    <input type="file" name="file" id="file" accept=".xlsx,.xlsm" required>
+                    <div class="file-label">クリックまたはドラッグ&ドロップでファイルを選択</div>
+                    <div class="file-name" id="fileName"></div>
+                </div>
+                <div class="sheet-list" id="sheetList">
+                    <h3>シート一覧<span class="sheet-count" id="sheetCount"></span><span class="selected-count" id="selectedCount"></span></h3>
+                    <div class="sheet-actions" id="sheetActions" style="display: none;">
+                        <button type="button" onclick="selectAll()">全選択</button>
+                        <button type="button" onclick="deselectAll()">全解除</button>
+                    </div>
+                    <ul id="sheetNames"></ul>
+                </div>
+            </div>
+
+            <div class="extract-section visible" id="modeSection">
+                <div class="form-group">
+                    <label>抽出方法</label>
+                    <div class="mode-selector">
+                        <button type="button" class="mode-btn active" data-mode="selection" onclick="setMode('selection')">シート選択</button>
+                        <button type="button" class="mode-btn" data-mode="keyword" onclick="setMode('keyword')">キーワード検索</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group extract-section" id="keywordSection">
+                <label for="keyword">検索キーワード</label>
+                <input type="text" name="keyword" id="keyword"
+                       placeholder="シート名に含まれる文字列">
+            </div>
+
+            <button type="submit">抽出してダウンロード</button>
+        </form>
+    </div>
+
+    <footer>
+        <a href="https://chiapuru.com" target="_blank">chiapuru.com</a>
+    </footer>
+
+    <script>
+        let currentSheets = [];
+
+        document.getElementById('file').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            const fileNameEl = document.getElementById('fileName');
+            const sheetListEl = document.getElementById('sheetList');
+            const sheetNamesEl = document.getElementById('sheetNames');
+            const sheetCountEl = document.getElementById('sheetCount');
+            const sheetActionsEl = document.getElementById('sheetActions');
+            const modeSectionEl = document.getElementById('modeSection');
+
+            if (!file) {
+                fileNameEl.textContent = '';
+                sheetListEl.classList.remove('visible');
+                modeSectionEl.classList.remove('visible');
+                currentSheets = [];
+                return;
+            }
+
+            fileNameEl.textContent = file.name;
+            sheetNamesEl.innerHTML = '<li class="loading">読み込み中...</li>';
+            sheetListEl.classList.add('visible');
+            sheetActionsEl.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/get_sheets', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.error) {
+                    sheetNamesEl.innerHTML = `<li style="color: #c00;">${data.error}</li>`;
+                    sheetCountEl.textContent = '';
+                    modeSectionEl.classList.remove('visible');
+                    currentSheets = [];
+                } else {
+                    currentSheets = data.sheets;
+                    sheetCountEl.textContent = `(${data.count}件)`;
+                    sheetActionsEl.style.display = 'flex';
+                    modeSectionEl.classList.add('visible');
+                    renderSheetList();
+                }
+            } catch (err) {
+                sheetNamesEl.innerHTML = '<li style="color: #c00;">エラーが発生しました</li>';
+                sheetCountEl.textContent = '';
+                modeSectionEl.classList.remove('visible');
+                currentSheets = [];
+            }
+        });
+
+        function renderSheetList() {
+            const sheetNamesEl = document.getElementById('sheetNames');
+            sheetNamesEl.innerHTML = currentSheets
+                .map((name, index) => `
+                    <li class="sheet-item">
+                        <input type="checkbox" name="selected_sheets" value="${escapeAttr(name)}" id="sheet_${index}" onchange="updateSelectedCount()">
+                        <label for="sheet_${index}">${escapeHtml(name)}</label>
+                    </li>
+                `)
+                .join('');
+            updateSelectedCount();
+        }
+
+        function setMode(mode) {
+            document.getElementById('extractMode').value = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+            document.getElementById('keywordSection').classList.toggle('visible', mode === 'keyword');
+        }
+
+        function selectAll() {
+            document.querySelectorAll('input[name="selected_sheets"]').forEach(cb => cb.checked = true);
+            updateSelectedCount();
+        }
+
+        function deselectAll() {
+            document.querySelectorAll('input[name="selected_sheets"]').forEach(cb => cb.checked = false);
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            const count = document.querySelectorAll('input[name="selected_sheets"]:checked').length;
+            document.getElementById('selectedCount').textContent = count > 0 ? `(${count}件選択中)` : '';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function escapeAttr(text) {
+            return text.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+    </script>
+</body>
+</html>
