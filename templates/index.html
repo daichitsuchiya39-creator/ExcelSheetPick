@@ -254,7 +254,8 @@
         <h1>Excelシート分離ツール</h1>
         <p class="description">
             複数のシートを含むExcelファイルをアップロードし、
-            指定したキーワードを含むシートのみを抽出して新しいファイルとしてダウンロードできます。
+            指定したキーワードを含むシートのみを抽出して新しいファイルとしてダウンロードできます。<br>
+            <small style="color: #999;">※ .xlsmファイルは読み込めますが、マクロは出力ファイルに含まれません。</small>
         </p>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
