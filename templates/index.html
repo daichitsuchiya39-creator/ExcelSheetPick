@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Excelシート分離ツール</title>
+    <title>Sheet Picker</title>
     <style>
         * {
             box-sizing: border-box;
@@ -251,11 +251,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>Excelシート分離ツール</h1>
+        <h1>Sheet Picker</h1>
         <p class="description">
-            複数のシートを含むExcelファイルをアップロードし、
-            指定したキーワードを含むシートのみを抽出して新しいファイルとしてダウンロードできます。<br>
-            <small style="color: #999;">※ .xlsmファイルは読み込めますが、マクロは出力ファイルに含まれません。</small>
+            Upload a workbook file with multiple sheets and extract only the sheets containing specified keywords or select specific sheets to download as a new file.<br>
+            <small style="color: #999;">※ .xlsm files can be read, but macros will not be included in the output file.</small>
         </p>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -272,17 +271,17 @@
             <input type="hidden" name="extract_mode" id="extractMode" value="selection">
 
             <div class="form-group">
-                <label for="file">Excelファイル (.xlsx, .xlsm)</label>
+                <label for="file">Workbook File (.xlsx, .xlsm)</label>
                 <div class="file-input-wrapper">
                     <input type="file" name="file" id="file" accept=".xlsx,.xlsm" required>
-                    <div class="file-label">クリックまたはドラッグ&ドロップでファイルを選択</div>
+                    <div class="file-label">Click or drag & drop to select file</div>
                     <div class="file-name" id="fileName"></div>
                 </div>
                 <div class="sheet-list" id="sheetList">
-                    <h3>シート一覧<span class="sheet-count" id="sheetCount"></span><span class="selected-count" id="selectedCount"></span></h3>
+                    <h3>Sheet List<span class="sheet-count" id="sheetCount"></span><span class="selected-count" id="selectedCount"></span></h3>
                     <div class="sheet-actions" id="sheetActions" style="display: none;">
-                        <button type="button" onclick="selectAll()">全選択</button>
-                        <button type="button" onclick="deselectAll()">全解除</button>
+                        <button type="button" onclick="selectAll()">Select All</button>
+                        <button type="button" onclick="deselectAll()">Deselect All</button>
                     </div>
                     <ul id="sheetNames"></ul>
                 </div>
@@ -290,21 +289,21 @@
 
             <div class="extract-section visible" id="modeSection">
                 <div class="form-group">
-                    <label>抽出方法</label>
+                    <label>Extraction Method</label>
                     <div class="mode-selector">
-                        <button type="button" class="mode-btn active" data-mode="selection" onclick="setMode('selection')">シート選択</button>
-                        <button type="button" class="mode-btn" data-mode="keyword" onclick="setMode('keyword')">キーワード検索</button>
+                        <button type="button" class="mode-btn active" data-mode="selection" onclick="setMode('selection')">Sheet Selection</button>
+                        <button type="button" class="mode-btn" data-mode="keyword" onclick="setMode('keyword')">Keyword Search</button>
                     </div>
                 </div>
             </div>
 
             <div class="form-group extract-section" id="keywordSection">
-                <label for="keyword">検索キーワード</label>
+                <label for="keyword">Search Keyword</label>
                 <input type="text" name="keyword" id="keyword"
-                       placeholder="シート名に含まれる文字列">
+                       placeholder="Text contained in sheet name">
             </div>
 
-            <button type="submit">抽出してダウンロード</button>
+            <button type="submit">Extract and Download</button>
         </form>
     </div>
 
@@ -333,7 +332,7 @@
             }
 
             fileNameEl.textContent = file.name;
-            sheetNamesEl.innerHTML = '<li class="loading">読み込み中...</li>';
+            sheetNamesEl.innerHTML = '<li class="loading">Loading...</li>';
             sheetListEl.classList.add('visible');
             sheetActionsEl.style.display = 'none';
 
@@ -354,13 +353,13 @@
                     currentSheets = [];
                 } else {
                     currentSheets = data.sheets;
-                    sheetCountEl.textContent = `(${data.count}件)`;
+                    sheetCountEl.textContent = `(${data.count} sheets)`;
                     sheetActionsEl.style.display = 'flex';
                     modeSectionEl.classList.add('visible');
                     renderSheetList();
                 }
             } catch (err) {
-                sheetNamesEl.innerHTML = '<li style="color: #c00;">エラーが発生しました</li>';
+                sheetNamesEl.innerHTML = '<li style="color: #c00;">An error occurred</li>';
                 sheetCountEl.textContent = '';
                 modeSectionEl.classList.remove('visible');
                 currentSheets = [];
@@ -400,7 +399,7 @@
 
         function updateSelectedCount() {
             const count = document.querySelectorAll('input[name="selected_sheets"]:checked').length;
-            document.getElementById('selectedCount').textContent = count > 0 ? `(${count}件選択中)` : '';
+            document.getElementById('selectedCount').textContent = count > 0 ? `(${count} selected)` : '';
         }
 
         function escapeHtml(text) {
